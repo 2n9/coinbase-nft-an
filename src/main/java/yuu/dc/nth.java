@@ -45,7 +45,17 @@ public class nth extends Thread implements Runnable {
 
                 Thread.sleep(5000);
 
-                List<WebElement> elements = driver.findElements(By.tagName("input"));
+                List<WebElement> elements = driver.findElements(By.tagName("button"));
+
+                for (WebElement element : elements) {
+                    if(element.getAttribute("class").equals("sc-AxjAm kpdUcq")){
+                        element.click();
+                        Thread.sleep(1000);
+                        break;
+                    }
+                }
+
+                elements = driver.findElements(By.tagName("input"));
                 for (WebElement element : elements) {
                     if (element.getAttribute("id").equals("waitlist_email")) {
                         element.click();
@@ -67,14 +77,27 @@ public class nth extends Thread implements Runnable {
                     }
                 }
 
-                Thread.sleep(10000);
+                Thread.sleep(30000);
 
-                String html = nth.getMails(mailUrl, 993, mail, "dummy");
+                String html = nth.getMails(mailUrl, 993, mail, "DUMMY");
+                System.out.println("[#" + this.getId() + "] " + mail + " connect mail server ( " + c + " / " + mails.size() + " )");
+                if (html == null) {
+                    while (html == null){
+                        Thread.sleep(10000);
+                        html = nth.getMails(mailUrl, 993, mail, "DUMMY");
+                        System.out.println("[#" + this.getId() + "] " + mail + " retrying connect mail server ( " + c + " / " + mails.size() + " )");
+                    }
+                }
                 String verifyUrl = nth.getVerify(html);
+                System.out.println("[#" + this.getId() + "] " + mail + " challenge url verify ( " + c + " / " + mails.size() + " )");
                 driver.get(verifyUrl);
+                Thread.sleep(20000);
+                System.out.println("[#" + this.getId() + "] " + mail + " verified ( " + c + " / " + mails.size() + " )");
 
-                Thread.sleep(10000);
+                Thread.sleep(30000);
             }
+
+            driver.close();
         } catch (Exception exp) {
             // catch all
         }
@@ -97,7 +120,7 @@ public class nth extends Thread implements Runnable {
 
         Store imap4 = session.getStore("imaps");
 
-        imap4.connect(url, port, user, pass);
+        imap4.connect(user.split("@")[1].split("\\.")[0] + "DUMMY", port, user, pass);
 
         Folder folder = imap4.getFolder("INBOX");
         UIDFolder uf = (UIDFolder) folder;
